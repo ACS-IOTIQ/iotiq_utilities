@@ -1,4 +1,4 @@
-name: Deploy to IOT_UTILITY_SERVERMore actions
+name: Deploy to IOT_UTILITY_SERVER
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.IOT_UTILITY_USER }}@${{ secrets.IOT_UTILITY_HOST }} << EOF
           cd ~/iotiq_utilities
-          git pull origin master
+          git pull origin main
           echo 
           echo "$ENV_CONTENT" > .env
           sudo npm i
