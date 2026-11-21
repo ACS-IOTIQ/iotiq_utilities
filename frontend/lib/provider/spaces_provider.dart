@@ -148,10 +148,15 @@ class SpacesProvider extends ChangeNotifier {
       print("Response: ${response.statusCode} - ${response.body}");
 
       if (response.statusCode == 200) {
-        // Optionally handle success
         print("Device control successful.");
       } else {
-        throw Exception('Failed to control device: ${response.body}');
+        String reason = 'HTTP ${response.statusCode}';
+        try {
+          final data = jsonDecode(response.body);
+          reason = (data['error'] ?? data['message'] ?? reason).toString();
+        } catch (_) {}
+        print('Device control failed: $reason');
+        CustomToast.showErrorToast(msg: "Device control failed: $reason");
       }
     } catch (e) {
       print("Error controlling device: $e");
