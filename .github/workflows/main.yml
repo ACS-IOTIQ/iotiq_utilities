@@ -3,7 +3,7 @@ name: Deploy to IOT_UTILITY_SERVER
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -25,11 +25,21 @@ jobs:
       env: 
         ENV_CONTENT: ${{ secrets.ENV }}
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.IOT_UTILITY_USER }}@${{ secrets.IOT_UTILITY_HOST }} << 'EOF'
-          cd ~/iotiq_utilities/backend
-          echo "$ENV_CONTENT" > .env
+        SSH_TARGET="${{ secrets.IOT_UTILITY_USER }}@${{ secrets.IOT_UTILITY_HOST }}"
 
-          cd ../scripts/backend
+        # Refuse to wipe the server's .env if the secret is missing
+        if [ -z "$ENV_CONTENT" ]; then
+          echo "::error::secrets.ENV is empty - aborting so the server .env is not overwritten"
+          exit 1
+        fi
+
+        # Send .env over stdin (variables in a quoted heredoc are NOT expanded,
+        # which previously wrote an empty .env on the server)
+        printf '%s\n' "$ENV_CONTENT" | ssh -o StrictHostKeyChecking=no "$SSH_TARGET" 'cat > ~/iotiq_utilities/backend/.env'
+
+        ssh -o StrictHostKeyChecking=no "$SSH_TARGET" << 'EOF'
+          set -e
+          cd ~/iotiq_utilities/scripts/backend
           chmod +x deploy.sh
           ./deploy.sh
         EOF

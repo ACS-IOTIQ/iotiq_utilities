@@ -19,7 +19,7 @@ docker build -t "$IMAGE_NAME" -f "$DOCKERFILE_PATH" "$BACKEND_DIR"
 
 # Push the Docker image
 echo "Pushing Docker image to registry..."
-docker push "$IMAGE_NAME"
+docker push "$IMAGE_NAME" || echo "WARNING: docker push failed (not logged in?) - continuing with local image"
 
 # Restart the docker-compose
 echo "Restarting backend via Docker Compose..."
